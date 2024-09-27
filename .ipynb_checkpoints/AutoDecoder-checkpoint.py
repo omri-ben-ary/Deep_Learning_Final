@@ -5,10 +5,8 @@ class AutoDecoder(nn.Module):
     def __init__(self, layers=None):
         super().__init__()
         if layers is None:
-            # Default latent dim is 64
-            # Default hidden layers given below
             self.decoder = nn.Sequential(
-                nn.Linear(64, 256),
+                nn.Linear(64, 256), # Default latent dim is 64
                 nn.ReLU(),
                 nn.Linear(256, 512),
                 nn.ReLU(),
