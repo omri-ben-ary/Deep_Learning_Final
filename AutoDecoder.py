@@ -17,9 +17,9 @@ class AutoDecoder(nn.Module):
                 nn.Linear(1024, 28 * 28)
             )
         else:
-            self.decoder = nn.Sequential(layers)
+            self.decoder = layers
     
     def forward(self, z):
         x = self.decoder(z)
-        x = x.view(-1, 1, 28, 28)
+        x = x.view(-1, 28, 28)
         return x

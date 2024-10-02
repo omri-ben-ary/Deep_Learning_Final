@@ -1,0 +1,95 @@
+# 5 Best Architectures
+architectures = [
+    # 1. Wider Architecture with Increased Depth (Latent space: 256)
+    nn.Sequential(
+        nn.Linear(256, 512),
+        nn.BatchNorm1d(512),
+        nn.ReLU(),
+        nn.Dropout(0.25),
+        nn.Linear(512, 1024),
+        nn.BatchNorm1d(1024),
+        nn.ReLU(),
+        nn.Dropout(0.25),
+        nn.Linear(1024, 2048),
+        nn.BatchNorm1d(2048),
+        nn.ReLU(),
+        nn.Linear(2048, 4096),
+        nn.ReLU(),
+        nn.Linear(4096, 784)
+    ),
+    
+    # 2. Same Depth, Reduced Dropout (Latent space: 256)
+    nn.Sequential(
+        nn.Linear(256, 512),
+        nn.BatchNorm1d(512),
+        nn.ReLU(),
+        nn.Dropout(0.15),
+        nn.Linear(512, 1024),
+        nn.BatchNorm1d(1024),
+        nn.ReLU(),
+        nn.Dropout(0.15),
+        nn.Linear(1024, 2048),
+        nn.ReLU(),
+        nn.Linear(2048, 784)
+    ),
+    
+    # 3. Wider Layers with More Aggressive Dropout (Latent space: 256)
+    nn.Sequential(
+        nn.Linear(256, 512),
+        nn.BatchNorm1d(512),
+        nn.ReLU(),
+        nn.Dropout(0.4),
+        nn.Linear(512, 1024),
+        nn.BatchNorm1d(1024),
+        nn.ReLU(),
+        nn.Dropout(0.4),
+        nn.Linear(1024, 2048),
+        nn.BatchNorm1d(2048),
+        nn.ReLU(),
+        nn.Linear(2048, 784)
+    ),
+    
+    # 4. Depth Variant with Extra Layers (Latent space: 256)
+    nn.Sequential(
+        nn.Linear(256, 512),
+        nn.BatchNorm1d(512),
+        nn.ReLU(),
+        nn.Dropout(0.25),
+        nn.Linear(512, 1024),
+        nn.BatchNorm1d(1024),
+        nn.ReLU(),
+        nn.Linear(1024, 2048),
+        nn.BatchNorm1d(2048),
+        nn.ReLU(),
+        nn.Linear(2048, 4096),
+        nn.ReLU(),
+        nn.Linear(4096, 784)
+    ),
+    
+    # 5. Balanced Architecture with Leaky ReLU (Latent space: 256)
+    nn.Sequential(
+        nn.Linear(256, 512),
+        nn.BatchNorm1d(512),
+        nn.LeakyReLU(0.2),
+        nn.Dropout(0.25),
+        nn.Linear(512, 1024),
+        nn.BatchNorm1d(1024),
+        nn.LeakyReLU(0.2),
+        nn.Dropout(0.25),
+        nn.Linear(1024, 2048),
+        nn.ReLU(),
+        nn.Linear(2048, 784)
+    )
+]
+
+
+# 5 different learning rates
+learning_rates = [0.001, 0.0005, 0.0001, 0.002, 0.005]
+auto_decoders = [AutoDecoder.AutoDecoder(arch) for arch in architectures for _ in range(5)]  # 5 architectures repeated 5 times
+
+# Create 25 trainers by pairing each architecture with each learning rate
+trainers = [
+    AD_Trainer.AD_Trainer(decoder=AutoDecoder.AutoDecoder(arch), dataloader=train_dl, latent_dim=256, device=device, lr=lr)
+    for arch in architectures
+    for lr in learning_rates
+]
