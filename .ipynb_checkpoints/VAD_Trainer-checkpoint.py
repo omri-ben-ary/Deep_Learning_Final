@@ -17,6 +17,7 @@ def elbo_loss(x, x_rec, mu, log_var):
     :return: the elbo loss
     """
     kl_loss = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
+    # print(f"recon loss {reconstruction_loss(x,x_rec)} kl loss {kl_loss}")
     return reconstruction_loss(x, x_rec) + kl_loss
     
 
@@ -36,7 +37,7 @@ class VAD_Trainer:
         self.dataloader = dataloader
         self.device = device
         self.latents = torch.nn.Parameter(torch.randn(len(self.dataloader.dataset), self.latent_dim).to(self.device))
-        
+        # print([item.shape for item in list(self.var_decoder.parameters())])
         # Optimizer
         self.optimizer = optim.Adam(list(self.var_decoder.parameters()) + [self.latents], lr=lr)
         
@@ -51,13 +52,14 @@ class VAD_Trainer:
             images = x.to(self.device)
             batch_size = images.size(0)
             z = self.latents[batch_idx * batch_size : (batch_idx + 1) * batch_size, :]
+            #print(z.sum())
+            reconstructed_images = self.var_decoder(z)
             
-            reconstructed_images, mu, log_var = self.var_decoder(z)
-            
-            loss = self.loss(images, reconstructed_images, mu, log_var)
+            loss = self.loss(images, reconstructed_images, self.var_decoder.mu, self.var_decoder.log_var)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            # print(self.latents.sum())
             running_loss += loss.item()
         
         # Average loss over the epoch
