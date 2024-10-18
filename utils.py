@@ -34,7 +34,7 @@ def plot_tsne(dataset, latents, file_name, plot_title="t-SNE Plot"):
 
 
     plt.title(plot_title)
-    plt.legend()
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=5)  # Adjust ncol for number of columns
     plt.savefig(file_name)
     plt.clf()
 

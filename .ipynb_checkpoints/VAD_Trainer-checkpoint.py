@@ -17,12 +17,11 @@ def elbo_loss(x, x_rec, mu, log_var):
     :return: the elbo loss
     """
     kl_loss = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
-    # print(f"recon loss {reconstruction_loss(x,x_rec)} kl loss {kl_loss}")
-    return reconstruction_loss(x, x_rec) + kl_loss
+    return reconstruction_loss(x, x_rec) + 0.0 * kl_loss
     
 
 class VAD_Trainer:
-    def __init__(self, var_decoder, dataloader, latent_dim=256, device='cpu', lr=1e-3):
+    def __init__(self, var_decoder, dataloader, latent_dim=128, device='cpu', lr=1e-3):
         """
         Initialize the Trainer class.
         
@@ -36,8 +35,9 @@ class VAD_Trainer:
         self.latent_dim = latent_dim
         self.dataloader = dataloader
         self.device = device
-        self.latents = torch.nn.Parameter(torch.randn(len(self.dataloader.dataset), self.latent_dim).to(self.device))
-        # print([item.shape for item in list(self.var_decoder.parameters())])
+        temp_latents = torch.randn(10, self.latent_dim).to(self.device)
+        self.latents = torch.nn.Parameter(torch.stack([temp_latents[label,:] for label in dataloader.dataset.y])).to(device)
+
         # Optimizer
         self.optimizer = optim.Adam(list(self.var_decoder.parameters()) + [self.latents], lr=lr)
         
@@ -52,16 +52,14 @@ class VAD_Trainer:
             images = x.to(self.device)
             batch_size = images.size(0)
             z = self.latents[batch_idx * batch_size : (batch_idx + 1) * batch_size, :]
-            #print(z.sum())
             reconstructed_images = self.var_decoder(z)
             
             loss = self.loss(images, reconstructed_images, self.var_decoder.mu, self.var_decoder.log_var)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-            # print(self.latents.sum())
             running_loss += loss.item()
-        
+
         # Average loss over the epoch
         epoch_loss = running_loss / len(self.dataloader)
         return epoch_loss
@@ -86,5 +84,4 @@ class VAD_Trainer:
                 no_improvement += 1
                 if early_stopping is not None and no_improvement >= early_stopping:
                     break
-
         return losses
