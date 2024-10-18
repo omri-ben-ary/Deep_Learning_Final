@@ -47,10 +47,11 @@ class VariationalAutoDecoder(nn.Module):
             nn.ConvTranspose2d(64, 1, kernel_size=3, stride=1, padding=1)
         )
 
+
     def reparameterize(self):
         eps = torch.randn((1, 128)).to(self.device)
         std = torch.exp(0.5 * self.log_var)
-        return self.mu + eps * std
+        return torch.sigmoid(self.mu + eps * std)
 
     def forward(self, latent_vec):
         self.mu = self.mu_net(latent_vec)
