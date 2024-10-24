@@ -40,13 +40,9 @@ class AD_Trainer:
         for batch_idx, (_, x) in enumerate(self.dataloader):
             images = x.to(self.device)
             batch_size = images.size(0)
-            # print(f"batch size: {batch_size}")
-            # Randomly initialize latent codes
             z = self.latents[batch_idx * batch_size : (batch_idx + 1) * batch_size, :]
             
             reconstructed_images = self.decoder(z)
-            # print(f"Reconstructed image shape: {reconstructed_images.shape}")
-            # print(f"image shape: {images.shape}")
             
             loss = self.loss(images, reconstructed_images)
             self.optimizer.zero_grad()
@@ -54,7 +50,6 @@ class AD_Trainer:
             self.optimizer.step()
             running_loss += loss.item()
         
-        # Average loss over the epoch
         epoch_loss = running_loss / len(self.dataloader)
         return epoch_loss
     
